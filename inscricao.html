@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inscricao | Academia 63</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="assets/images/logo/logo-63.svg" type="image/svg+xml" />
+</head>
+<body class="bg-gray-50 font-sans-clean text-gray-900">
+  <header class="bg-white border-b border-gray-200">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+      <a href="index.html" class="inline-flex items-center gap-3">
+        <img src="assets/images/logo/logo-63.svg" alt="Academia 63" class="w-10 h-10" />
+        <span class="font-serif-jp text-lg">Academia 63</span>
+      </a>
+      <a
+        href="https://wa.me/5524999582526"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-sm text-green-700 hover:text-green-800"
+      >
+        WhatsApp: (24) 99958-2526
+      </a>
+    </div>
+  </header>
+
+  <main class="py-10">
+    <section class="max-w-5xl mx-auto px-6">
+      <div class="mb-8">
+        <h1 class="font-serif-jp text-3xl md:text-4xl text-gray-900">Inscricao + PAR-Q</h1>
+        <p class="text-gray-600 mt-2">
+          Preencha os dados abaixo para iniciar sua matricula e o questionario de prontidao fisica.
+        </p>
+      </div>
+
+      <form id="inscricao-form" class="space-y-8">
+        <div class="bg-white border border-gray-200 rounded-sm p-6 md:p-8">
+          <h2 class="font-serif-jp text-2xl mb-5">Dados do Aluno</h2>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+              <label for="full_name" class="block text-sm font-medium mb-1">Nome completo</label>
+              <input id="full_name" name="full_name" required class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+
+            <div>
+              <label for="birth_date" class="block text-sm font-medium mb-1">Data de nascimento</label>
+              <input id="birth_date" name="birth_date" type="date" required class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+
+            <div>
+              <label for="age_display" class="block text-sm font-medium mb-1">Idade (automatica)</label>
+              <input id="age_display" name="age_display" readonly class="w-full border border-gray-200 bg-gray-100 px-3 py-2" />
+            </div>
+
+            <div>
+              <label for="rg" class="block text-sm font-medium mb-1">RG</label>
+              <input id="rg" name="rg" class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+
+            <div>
+              <label for="cpf" class="block text-sm font-medium mb-1">CPF</label>
+              <input id="cpf" name="cpf" class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+
+            <div>
+              <label for="phone" class="block text-sm font-medium mb-1">Telefone</label>
+              <input id="phone" name="phone" class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+
+            <div>
+              <label for="email" class="block text-sm font-medium mb-1">E-mail</label>
+              <input id="email" name="email" type="email" class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+
+            <div>
+              <label for="modality" class="block text-sm font-medium mb-1">Modalidade</label>
+              <select id="modality" name="modality" required class="w-full border border-gray-300 px-3 py-2">
+                <option value="">Selecione</option>
+                <option value="Judo">Judo</option>
+                <option value="Jiu-Jitsu">Jiu-Jitsu</option>
+                <option value="Muay Thai">Muay Thai</option>
+                <option value="Taekwondo">Taekwondo</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="monthly_fee" class="block text-sm font-medium mb-1">Mensalidade (R$)</label>
+              <input id="monthly_fee" name="monthly_fee" type="number" step="0.01" min="0" value="120" readonly class="w-full border border-gray-200 bg-gray-100 px-3 py-2" />
+            </div>
+
+            <div>
+              <label for="payment_day" class="block text-sm font-medium mb-1">Dia de pagamento</label>
+              <input id="payment_day" name="payment_day" type="number" min="1" max="31" class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+
+            <div class="md:col-span-2">
+              <label for="address" class="block text-sm font-medium mb-1">Endereco</label>
+              <input id="address" name="address" class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+
+            <div class="md:col-span-2">
+              <label for="notes" class="block text-sm font-medium mb-1">Observacoes</label>
+              <textarea id="notes" name="notes" rows="3" class="w-full border border-gray-300 px-3 py-2"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-sm p-6 md:p-8">
+          <h2 class="font-serif-jp text-2xl mb-3">Contrato e Politica de Desconto</h2>
+          <p class="text-sm text-gray-700 mb-3">
+            Mensalidade base: <strong>R$ 120,00</strong>.
+          </p>
+          <ul class="list-disc list-inside text-sm text-gray-700 space-y-1 mb-4">
+            <li>Com contrato aceito ate 31/12, mensalidade promocional para pagamento em dia: <strong>R$ 100,00</strong>.</li>
+            <li>Apos o vencimento, o valor do mes retorna para a mensalidade normal de <strong>R$ 120,00</strong>.</li>
+            <li>Sem contrato aceito, nao ha concessao de desconto (valor mensal R$ 120,00).</li>
+            <li>Em caso de quebra antecipada do contrato, devera ser pago o total dos descontos concedidos ate o momento.</li>
+            <li>Contrato com previsao de cobranca e, se necessario, negativacao em SPC/SERASA, conforme legislacao aplicavel.</li>
+            <li>Fica eleito o foro da Comarca de Volta Redonda/RJ para dirimir eventuais controversias.</li>
+          </ul>
+
+          <fieldset>
+            <legend class="text-sm font-medium mb-2">Aceita o contrato ate o fim do ano?</legend>
+            <label class="mr-4"><input type="radio" name="contract_until_year_end_accepted" value="sim" required /> Sim</label>
+            <label><input type="radio" name="contract_until_year_end_accepted" value="nao" required /> Nao</label>
+          </fieldset>
+        </div>
+
+        <div id="guardian-section" class="hidden bg-white border border-gray-200 rounded-sm p-6 md:p-8">
+          <h2 class="font-serif-jp text-2xl mb-5">Responsavel (obrigatorio para menor de idade)</h2>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="md:col-span-2">
+              <label for="guardian_full_name" class="block text-sm font-medium mb-1">Nome completo</label>
+              <input id="guardian_full_name" name="guardian_full_name" data-required-when-minor="true" class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+
+            <div>
+              <label for="guardian_cpf" class="block text-sm font-medium mb-1">CPF</label>
+              <input id="guardian_cpf" name="guardian_cpf" data-required-when-minor="true" class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+
+            <div>
+              <label for="guardian_rg" class="block text-sm font-medium mb-1">RG</label>
+              <input id="guardian_rg" name="guardian_rg" class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+
+            <div>
+              <label for="guardian_phone" class="block text-sm font-medium mb-1">Telefone</label>
+              <input id="guardian_phone" name="guardian_phone" data-required-when-minor="true" class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+
+            <div>
+              <label for="guardian_relationship" class="block text-sm font-medium mb-1">Parentesco</label>
+              <input id="guardian_relationship" name="guardian_relationship" data-required-when-minor="true" class="w-full border border-gray-300 px-3 py-2" />
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-sm p-6 md:p-8">
+          <h2 class="font-serif-jp text-2xl mb-2">Questionario de Prontidao para Atividade Fisica (PAR-Q)</h2>
+          <p class="text-sm text-gray-600 mb-2">
+            Este questionario identifica a necessidade de avaliacao medica antes do inicio da atividade fisica.
+          </p>
+          <p class="text-sm text-gray-600 mb-6">
+            Se voce responder "Sim" a uma ou mais perguntas, converse com seu medico antes de aumentar seu nivel atual de atividade fisica.
+          </p>
+
+          <div class="space-y-5">
+            <div>
+              <p class="mb-2">1. Algum medico ja disse que voce possui algum problema de coracao e que so deveria realizar atividade fisica supervisionada por profissionais de saude?</p>
+              <label class="mr-4"><input type="radio" name="q1" value="sim" required /> Sim</label>
+              <label><input type="radio" name="q1" value="nao" required /> Nao</label>
+            </div>
+            <div>
+              <p class="mb-2">2. Voce sente dores no peito quando pratica atividade fisica?</p>
+              <label class="mr-4"><input type="radio" name="q2" value="sim" required /> Sim</label>
+              <label><input type="radio" name="q2" value="nao" required /> Nao</label>
+            </div>
+            <div>
+              <p class="mb-2">3. No ultimo mes, voce sentiu dores no peito quando praticou atividade fisica?</p>
+              <label class="mr-4"><input type="radio" name="q3" value="sim" required /> Sim</label>
+              <label><input type="radio" name="q3" value="nao" required /> Nao</label>
+            </div>
+            <div>
+              <p class="mb-2">4. Voce apresenta desequilibrio devido a tontura e/ou perda de consciencia?</p>
+              <label class="mr-4"><input type="radio" name="q4" value="sim" required /> Sim</label>
+              <label><input type="radio" name="q4" value="nao" required /> Nao</label>
+            </div>
+            <div>
+              <p class="mb-2">5. Voce tem problema osseo ou articular que poderia ser agravado pela atividade fisica?</p>
+              <label class="mr-4"><input type="radio" name="q5" value="sim" required /> Sim</label>
+              <label><input type="radio" name="q5" value="nao" required /> Nao</label>
+            </div>
+            <div>
+              <p class="mb-2">6. Voce toma atualmente algum medicamento para pressao arterial e/ou problema de coracao?</p>
+              <label class="mr-4"><input type="radio" name="q6" value="sim" required /> Sim</label>
+              <label><input type="radio" name="q6" value="nao" required /> Nao</label>
+            </div>
+            <div>
+              <p class="mb-2">7. Voce conhece alguma outra razao pela qual nao deveria praticar atividade fisica?</p>
+              <label class="mr-4"><input type="radio" name="q7" value="sim" required /> Sim</label>
+              <label><input type="radio" name="q7" value="nao" required /> Nao</label>
+            </div>
+          </div>
+
+          <div class="mt-8 space-y-3">
+            <label class="flex gap-2 items-start">
+              <input type="checkbox" id="responsibility_term_accepted" name="responsibility_term_accepted" required class="mt-1" />
+              <span>Declaro que as informacoes acima sao verdadeiras e assumo responsabilidade pelos dados fornecidos.</span>
+            </label>
+
+            <label class="flex gap-2 items-start">
+              <input type="checkbox" id="govbr_signature_requested" name="govbr_signature_requested" class="mt-1" />
+              <span>Quero assinar digitalmente via GovBR.</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="bg-white border border-gray-200 rounded-sm p-6 md:p-8">
+          <h2 class="font-serif-jp text-2xl mb-3">Termo de Responsabilidade</h2>
+          <p class="text-gray-700 mb-4">
+            Estou ciente de que e recomendavel conversar com um medico antes de aumentar meu nivel atual de atividade fisica, por ter respondido "Sim" a uma ou mais perguntas do PAR-Q.
+            Assumo plena responsabilidade por qualquer atividade fisica praticada sem o atendimento a essa recomendacao.
+          </p>
+
+          <h3 class="font-serif-jp text-xl mb-3">Assinatura GovBR (opcional)</h3>
+          <ol class="list-decimal list-inside text-gray-700 space-y-1">
+            <li>Baixe o contrato PDF apos a confirmacao da inscricao.</li>
+            <li>Acesse o portal de assinatura digital do GovBR.</li>
+            <li>Envie o PDF e assine com sua conta GovBR.</li>
+            <li>Envie o arquivo assinado para a equipe administrativa.</li>
+          </ol>
+        </div>
+
+        <div class="pb-16">
+          <button
+            id="submit-btn"
+            type="submit"
+            class="btn-primary text-white px-8 py-3 rounded-sm font-medium"
+          >
+            Enviar inscricao
+          </button>
+          <p id="status-message" class="mt-4 text-sm text-gray-600"></p>
+          <div id="contract-actions" class="hidden mt-4 border border-gray-200 bg-white p-4 rounded-sm">
+            <p class="text-sm text-gray-700 mb-3">Contrato gerado. Escolha uma opcao:</p>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" id="read-contract-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Ler contrato</button>
+              <button type="button" id="print-contract-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Imprimir contrato</button>
+              <button type="button" id="download-contract-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Baixar PDF</button>
+              <a
+                id="govbr-sign-link"
+                href="https://www.gov.br/governodigital/pt-br/assinatura-eletronica"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
+              >
+                Assinar no GovBR
+              </a>
+            </div>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="js/config.js?v=20260220"></script>
+  <script src="js/supabase-client.js?v=20260220"></script>
+  <script src="js/pdf.js?v=20260220"></script>
+  <script src="js/inscricao.js?v=20260220"></script>
+</body>
+</html>

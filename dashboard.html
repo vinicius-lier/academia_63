@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Admin | Academia 63</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="assets/images/logo/logo-63.svg" type="image/svg+xml" />
+</head>
+<body class="bg-gray-50 font-sans-clean text-gray-900">
+  <header class="bg-white border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="assets/images/logo/logo-63.svg" alt="Academia 63" class="w-10 h-10" />
+        <h1 class="font-serif-jp text-2xl">Dashboard Administrativo</h1>
+      </div>
+      <button id="logout-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Sair</button>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-6 grid lg:grid-cols-12 gap-6">
+    <section class="lg:col-span-4 bg-white border border-gray-200 rounded-sm p-4">
+      <h2 class="font-serif-jp text-xl mb-3">Alunos</h2>
+      <div class="flex gap-2 mb-3">
+        <input id="search-input" placeholder="Buscar por nome" class="flex-1 border border-gray-300 px-3 py-2" />
+        <button id="search-btn" class="btn-primary text-white px-3 py-2">Buscar</button>
+      </div>
+      <div id="students-list" class="divide-y divide-gray-200 max-h-[70vh] overflow-auto"></div>
+    </section>
+
+    <section class="lg:col-span-8 space-y-6">
+      <div class="bg-white border border-gray-200 rounded-sm p-4">
+        <h2 class="font-serif-jp text-xl mb-3">Cadastro do Aluno</h2>
+        <div id="student-details" class="text-sm text-gray-700">Selecione um aluno.</div>
+        <div class="mt-4">
+          <label for="admin-notes" class="block text-sm font-medium mb-1">Observacoes internas</label>
+          <textarea id="admin-notes" rows="3" class="w-full border border-gray-300 px-3 py-2"></textarea>
+          <button id="save-notes-btn" class="mt-2 btn-primary text-white px-4 py-2 text-sm">Salvar observacoes</button>
+        </div>
+      </div>
+
+      <div class="bg-white border border-gray-200 rounded-sm p-4">
+        <h2 class="font-serif-jp text-xl mb-3">Historico PAR-Q</h2>
+        <div id="parq-history" class="text-sm text-gray-700">Nenhum registro carregado.</div>
+        <div class="mt-4 flex gap-2 flex-wrap">
+          <button id="view-contract-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Visualizar contrato</button>
+          <button id="print-contract-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Imprimir contrato</button>
+          <button id="fallback-pdf-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Gerar PDF fallback</button>
+        </div>
+      </div>
+
+      <div class="bg-white border border-gray-200 rounded-sm p-4">
+        <h2 class="font-serif-jp text-xl mb-3">Documentos do Aluno</h2>
+        <div class="grid md:grid-cols-3 gap-3">
+          <select id="doc-type" class="border border-gray-300 px-3 py-2">
+            <option value="signed_pdf">PDF assinado</option>
+            <option value="rg">RG</option>
+            <option value="medical_certificate">Atestado</option>
+            <option value="other">Outros</option>
+          </select>
+          <input id="doc-file" type="file" class="border border-gray-300 px-3 py-2 md:col-span-2" />
+        </div>
+        <button id="upload-doc-btn" class="mt-3 btn-primary text-white px-4 py-2 text-sm">Upload documento</button>
+        <div id="docs-list" class="mt-4 text-sm text-gray-700">Nenhum documento carregado.</div>
+      </div>
+
+      <p id="admin-status" class="text-sm text-gray-600"></p>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="js/config.js?v=20260220"></script>
+  <script src="js/supabase-client.js?v=20260220"></script>
+  <script src="js/pdf.js?v=20260220"></script>
+  <script src="js/admin.js?v=20260220"></script>
+</body>
+</html>

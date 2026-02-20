@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Admin | Academia 63</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="assets/images/logo/logo-63.svg" type="image/svg+xml" />
+</head>
+<body class="bg-gray-50 font-sans-clean text-gray-900 min-h-screen flex items-center justify-center p-6">
+  <main class="w-full max-w-md bg-white border border-gray-200 rounded-sm p-8">
+    <div class="mb-5 flex items-center gap-3">
+      <img src="assets/images/logo/logo-63.svg" alt="Academia 63" class="w-12 h-12" />
+      <div>
+        <p class="font-serif-jp text-xl leading-tight">Academia 63</p>
+        <p class="text-xs text-gray-500">Centro de Lutas</p>
+      </div>
+    </div>
+    <h1 class="font-serif-jp text-3xl mb-2">Painel Administrativo</h1>
+    <p class="text-gray-600 text-sm mb-6">Acesso restrito para administradores.</p>
+
+    <form id="login-form" class="space-y-4">
+      <div>
+        <label for="email" class="block text-sm font-medium mb-1">E-mail</label>
+        <input id="email" name="email" type="email" required class="w-full border border-gray-300 px-3 py-2" />
+      </div>
+      <div>
+        <label for="password" class="block text-sm font-medium mb-1">Senha</label>
+        <input id="password" name="password" type="password" required class="w-full border border-gray-300 px-3 py-2" />
+      </div>
+      <button id="login-btn" type="submit" class="btn-primary text-white px-5 py-2 rounded-sm">
+        Entrar
+      </button>
+      <p id="login-status" class="text-sm text-gray-600"></p>
+    </form>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>
