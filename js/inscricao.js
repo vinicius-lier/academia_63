@@ -106,10 +106,17 @@ function resetSignButton() {
   signBtn.textContent = "Assinar contrato";
 }
 
+function showSignedDownloadArea(show) {
+  const area = document.getElementById("signed-download-area");
+  if (!area) return;
+  area.classList.toggle("hidden", !show);
+}
+
 function bindContractActions() {
   const readBtn = document.getElementById("read-contract-btn");
   const printBtn = document.getElementById("print-contract-btn");
   const downloadBtn = document.getElementById("download-contract-btn");
+  const downloadSignedBtn = document.getElementById("download-signed-contract-btn");
   const signBtn = document.getElementById("sign-contract-btn");
 
   readBtn?.addEventListener("click", () => {
@@ -126,6 +133,16 @@ function bindContractActions() {
   });
 
   downloadBtn?.addEventListener("click", () => {
+    if (!contractState.objectUrl || !contractState.fileName) return;
+    const anchor = document.createElement("a");
+    anchor.href = contractState.objectUrl;
+    anchor.download = contractState.fileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+  });
+
+  downloadSignedBtn?.addEventListener("click", () => {
     if (!contractState.objectUrl || !contractState.fileName) return;
     const anchor = document.createElement("a");
     anchor.href = contractState.objectUrl;
@@ -178,10 +195,12 @@ function bindContractActions() {
 
       setStatus("Contrato assinado por clique com sucesso. PDF atualizado.", "success");
       signBtn.textContent = "Contrato assinado";
+      showSignedDownloadArea(true);
     } catch (error) {
       setStatus(`Falha ao assinar contrato: ${error.message}`, "error");
       signBtn.textContent = "Assinar contrato";
       signBtn.disabled = false;
+      showSignedDownloadArea(false);
     }
   });
 }
@@ -260,6 +279,7 @@ async function handleSubmit(event) {
   submitBtn.textContent = "Enviando...";
   setStatus("Salvando inscricao...", "info");
   showContractActions(false);
+  showSignedDownloadArea(false);
   clearContractObjectUrl();
   resetSignButton();
 
@@ -348,8 +368,12 @@ async function handleSubmit(event) {
       contractState.payload = contractPayload;
       contractState.client = client;
       contractState.studentId = studentId;
-      contractState.signerName = studentPayload.full_name;
-      contractState.signerCpf = studentPayload.cpf;
+      contractState.signerName = isMinor
+        ? form.guardian_full_name.value.trim()
+        : studentPayload.full_name;
+      contractState.signerCpf = isMinor
+        ? form.guardian_cpf.value.trim() || null
+        : studentPayload.cpf;
 
       const uploadResult = await uploadContractPdf({
         client,
@@ -361,6 +385,7 @@ async function handleSubmit(event) {
       pdfUrlValue = uploadResult.pdfUrlValue;
       showContractActions(true);
       resetSignButton();
+      showSignedDownloadArea(false);
     }
 
     const parqPayload = {
@@ -413,6 +438,7 @@ function setupForm() {
 
   bindContractActions();
   showContractActions(false);
+  showSignedDownloadArea(false);
   form.addEventListener("submit", handleSubmit);
 }
 
