@@ -6,7 +6,79 @@ const state = {
   guardians: [],
   parq: [],
   documents: [],
+  signatures: [],
 };
+
+function getSignatureInfoForParq(row) {
+  const sign = state.signatures.find((s) => s.parq_response_id === row.id);
+  const signedDoc = state.documents.find((d) => d.doc_type === "signed_pdf");
+  if (sign) {
+    return {
+      status: "ASSINADO POR CLIQUE",
+      meta: `${escapeHtml(sign.signer_name || "-")} | CPF: ${escapeHtml(sign.signer_cpf || "-")} | ${formatDateTime(sign.signed_at)}`,
+      isSigned: true,
+    };
+  }
+  if (signedDoc) {
+    return {
+      status: "ASSINADO (DOCUMENTO ANEXADO)",
+      meta: `${escapeHtml(signedDoc.file_name || "-")} | ${formatDateTime(signedDoc.created_at)}`,
+      isSigned: true,
+    };
+  }
+  return {
+    status: "NAO ASSINADO",
+    meta: "-",
+    isSigned: false,
+  };
+}
+
+function normalizeWhatsappNumber(value) {
+  const digits = String(value || "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("55")) return digits;
+  return `55${digits}`;
+}
+
+function buildSignatureWhatsappMessage() {
+  const student = state.selectedStudent;
+  const guardian = state.guardians[0];
+  const responsibleName = guardian?.full_name || student?.full_name || "responsavel";
+  const studentName = student?.full_name || "aluno";
+  return [
+    `Ola, ${responsibleName}.`,
+    `Aqui e da Academia 63 sobre o contrato de ${studentName}.`,
+    "Para validacao de identidade antes da assinatura, por favor responda com os 6 primeiros digitos do CPF do responsavel.",
+    "Assim que confirmar, finalizamos o procedimento de assinatura.",
+  ].join(" ");
+}
+
+function updateSignatureFollowupPanel() {
+  const panel = document.getElementById("signature-followup");
+  const phoneInput = document.getElementById("guardian-whatsapp");
+  const statusEl = document.getElementById("signature-followup-status");
+  if (!panel || !phoneInput || !statusEl) return;
+
+  const latestParq = state.parq[0];
+  if (!latestParq) {
+    panel.classList.add("hidden");
+    statusEl.textContent = "";
+    return;
+  }
+
+  const signInfo = getSignatureInfoForParq(latestParq);
+  if (signInfo.isSigned) {
+    panel.classList.add("hidden");
+    statusEl.textContent = "";
+    return;
+  }
+
+  panel.classList.remove("hidden");
+  if (!phoneInput.value) {
+    phoneInput.value = state.guardians[0]?.phone || "";
+  }
+  statusEl.textContent = "Contrato pendente de assinatura.";
+}
 
 function setAdminStatus(message, type = "info") {
   const el = document.getElementById("admin-status");
@@ -38,6 +110,15 @@ function formatDate(value) {
   if (!value) return "-";
   try {
     return new Date(value).toLocaleDateString("pt-BR");
+  } catch {
+    return value;
+  }
+}
+
+function formatDateTime(value) {
+  if (!value) return "-";
+  try {
+    return new Date(value).toLocaleString("pt-BR");
   } catch {
     return value;
   }
@@ -145,10 +226,13 @@ function renderParqHistory() {
       const answers = [row.q1, row.q2, row.q3, row.q4, row.q5, row.q6, row.q7]
         .map((v, i) => `Q${i + 1}: ${v ? "SIM" : "NAO"}`)
         .join(" | ");
+      const signInfo = getSignatureInfoForParq(row);
       return `
         <div class="border border-gray-200 rounded-sm p-3 ${idx ? "mt-2" : ""}">
           <div><strong>Data:</strong> ${formatDate(row.submitted_at)}</div>
           <div><strong>Alerta medico:</strong> ${row.has_positive_answer ? "SIM" : "NAO"}</div>
+          <div><strong>Status assinatura:</strong> ${signInfo.status}</div>
+          <div class="text-xs mt-1"><strong>Assinante:</strong> ${signInfo.meta}</div>
           <div class="text-xs mt-1">${answers}</div>
           <div class="text-xs mt-1"><strong>PDF:</strong> ${escapeHtml(row.pdf_url || "nao vinculado")}</div>
         </div>
@@ -267,14 +351,15 @@ function renderDocuments() {
 
 async function loadStudentDetails(studentId) {
   setAdminStatus("Carregando dados do aluno...");
-  const [guardiansRes, parqRes, docsRes] = await Promise.all([
+  const [guardiansRes, parqRes, docsRes, signaturesRes] = await Promise.all([
     state.client.from("guardians").select("*").eq("student_id", studentId).order("created_at", { ascending: false }),
     state.client.from("parq_responses").select("*").eq("student_id", studentId).order("submitted_at", { ascending: false }),
     state.client.from("student_documents").select("*").eq("student_id", studentId).order("created_at", { ascending: false }),
+    state.client.from("contract_click_signatures").select("*").eq("student_id", studentId).order("signed_at", { ascending: false }),
   ]);
 
-  if (guardiansRes.error || parqRes.error || docsRes.error) {
-    const err = guardiansRes.error || parqRes.error || docsRes.error;
+  if (guardiansRes.error || parqRes.error || docsRes.error || signaturesRes.error) {
+    const err = guardiansRes.error || parqRes.error || docsRes.error || signaturesRes.error;
     setAdminStatus(`Falha ao carregar detalhes: ${err.message}`, "error");
     return;
   }
@@ -282,10 +367,12 @@ async function loadStudentDetails(studentId) {
   state.guardians = guardiansRes.data || [];
   state.parq = parqRes.data || [];
   state.documents = docsRes.data || [];
+  state.signatures = signaturesRes.data || [];
 
   renderStudentDetails();
   renderParqHistory();
   renderDocuments();
+  updateSignatureFollowupPanel();
   setAdminStatus("Dados carregados.", "success");
 }
 
@@ -413,6 +500,29 @@ function bindActions() {
     } catch (error) {
       setAdminStatus(`Falha ao gerar fallback: ${error.message}`, "error");
     }
+  });
+  document.getElementById("send-whatsapp-sign-btn")?.addEventListener("click", () => {
+    const phoneInput = document.getElementById("guardian-whatsapp");
+    const statusEl = document.getElementById("signature-followup-status");
+    const latestParq = state.parq[0];
+    if (!phoneInput || !statusEl || !latestParq) return;
+
+    const signInfo = getSignatureInfoForParq(latestParq);
+    if (signInfo.isSigned) {
+      statusEl.textContent = "Este contrato ja consta como assinado.";
+      return;
+    }
+
+    const phone = normalizeWhatsappNumber(phoneInput.value);
+    if (!phone || phone.length < 12) {
+      statusEl.textContent = "Informe um numero de WhatsApp valido com DDD.";
+      return;
+    }
+
+    const text = encodeURIComponent(buildSignatureWhatsappMessage());
+    const waUrl = `https://wa.me/${phone}?text=${text}`;
+    window.open(waUrl, "_blank", "noopener,noreferrer");
+    statusEl.textContent = "WhatsApp aberto com mensagem de validacao para assinatura.";
   });
   document.getElementById("logout-btn")?.addEventListener("click", async () => {
     await state.client.auth.signOut();
