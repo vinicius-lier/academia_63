@@ -177,6 +177,17 @@ function bindContractActions() {
       const { error: signError } = await contractState.client.from("contract_click_signatures").insert(signaturePayload);
       if (signError) throw signError;
 
+      const { error: updateParqSignError } = await contractState.client
+        .from("parq_responses")
+        .update({
+          contract_signed_at: signedAt,
+          contract_signer_name: contractState.signerName,
+          contract_signer_cpf: contractState.signerCpf,
+          contract_signature_method: "click_button",
+        })
+        .eq("id", contractState.parqResponseId);
+      if (updateParqSignError) throw updateParqSignError;
+
       contractState.signedAt = signedAt;
       const signedPayload = {
         ...contractState.payload,

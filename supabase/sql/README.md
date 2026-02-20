@@ -11,6 +11,8 @@ Execute no SQL Editor do Supabase nesta ordem:
 7. `007_fix_public_insert_rls.sql`
 8. `008_students_public_insert_hard_reset.sql` (use se persistir erro de RLS em students)
 9. `009_contract_click_signatures.sql`
+10. `010_signature_link_flow.sql`
+11. `011_parq_signed_status.sql`
 
 ## Observacoes
 

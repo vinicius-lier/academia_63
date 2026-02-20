@@ -7,9 +7,18 @@ const state = {
   parq: [],
   documents: [],
   signatures: [],
+  followupParqId: null,
 };
 
 function getSignatureInfoForParq(row) {
+  if (row.contract_signed_at) {
+    return {
+      status: "ASSINADO",
+      meta: `${escapeHtml(row.contract_signer_name || "-")} | CPF: ${escapeHtml(row.contract_signer_cpf || "-")} | ${formatDateTime(row.contract_signed_at)}`,
+      isSigned: true,
+    };
+  }
+
   const sign = state.signatures.find((s) => s.parq_response_id === row.id);
   const signedDoc = state.documents.find((d) => d.doc_type === "signed_pdf");
   if (sign) {
@@ -43,13 +52,18 @@ function normalizeWhatsappNumber(value) {
 function buildSignatureWhatsappMessage() {
   const student = state.selectedStudent;
   const guardian = state.guardians[0];
+  const targetParq = state.parq.find((p) => p.id === state.followupParqId) || state.parq[0];
   const responsibleName = guardian?.full_name || student?.full_name || "responsavel";
   const studentName = student?.full_name || "aluno";
+  const signLink = targetParq
+    ? `${window.location.origin}/assinatura.html?s=${encodeURIComponent(student.id)}&p=${encodeURIComponent(targetParq.id)}`
+    : `${window.location.origin}/assinatura.html`;
   return [
     `Ola, ${responsibleName}.`,
     `Aqui e da Academia 63 sobre o contrato de ${studentName}.`,
-    "Para validacao de identidade antes da assinatura, por favor responda com os 6 primeiros digitos do CPF do responsavel.",
-    "Assim que confirmar, finalizamos o procedimento de assinatura.",
+    "Segue o link para assinatura do contrato:",
+    signLink,
+    "Ao abrir o link, informe os 6 primeiros digitos do CPF do responsavel para validacao.",
   ].join(" ");
 }
 
@@ -59,14 +73,14 @@ function updateSignatureFollowupPanel() {
   const statusEl = document.getElementById("signature-followup-status");
   if (!panel || !phoneInput || !statusEl) return;
 
-  const latestParq = state.parq[0];
-  if (!latestParq) {
+  const targetParq = state.parq.find((p) => p.id === state.followupParqId) || state.parq[0];
+  if (!targetParq) {
     panel.classList.add("hidden");
     statusEl.textContent = "";
     return;
   }
 
-  const signInfo = getSignatureInfoForParq(latestParq);
+  const signInfo = getSignatureInfoForParq(targetParq);
   if (signInfo.isSigned) {
     panel.classList.add("hidden");
     statusEl.textContent = "";
@@ -77,7 +91,7 @@ function updateSignatureFollowupPanel() {
   if (!phoneInput.value) {
     phoneInput.value = state.guardians[0]?.phone || "";
   }
-  statusEl.textContent = "Contrato pendente de assinatura.";
+  statusEl.textContent = `Contrato de ${formatDate(targetParq.submitted_at)} pendente de assinatura.`;
 }
 
 function setAdminStatus(message, type = "info") {
@@ -227,6 +241,9 @@ function renderParqHistory() {
         .map((v, i) => `Q${i + 1}: ${v ? "SIM" : "NAO"}`)
         .join(" | ");
       const signInfo = getSignatureInfoForParq(row);
+      const sendBtn = signInfo.isSigned
+        ? ""
+        : `<button data-send-sign-link="${row.id}" class="mt-2 border border-amber-400 text-amber-900 px-2 py-1 text-xs hover:bg-amber-100">Enviar link de assinatura</button>`;
       return `
         <div class="border border-gray-200 rounded-sm p-3 ${idx ? "mt-2" : ""}">
           <div><strong>Data:</strong> ${formatDate(row.submitted_at)}</div>
@@ -235,6 +252,7 @@ function renderParqHistory() {
           <div class="text-xs mt-1"><strong>Assinante:</strong> ${signInfo.meta}</div>
           <div class="text-xs mt-1">${answers}</div>
           <div class="text-xs mt-1"><strong>PDF:</strong> ${escapeHtml(row.pdf_url || "nao vinculado")}</div>
+          ${sendBtn}
         </div>
       `;
     })
@@ -368,6 +386,7 @@ async function loadStudentDetails(studentId) {
   state.parq = parqRes.data || [];
   state.documents = docsRes.data || [];
   state.signatures = signaturesRes.data || [];
+  state.followupParqId = state.parq[0]?.id || null;
 
   renderStudentDetails();
   renderParqHistory();
@@ -501,13 +520,25 @@ function bindActions() {
       setAdminStatus(`Falha ao gerar fallback: ${error.message}`, "error");
     }
   });
+  document.getElementById("parq-history")?.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const parqId = target.getAttribute("data-send-sign-link");
+    if (!parqId) return;
+    state.followupParqId = parqId;
+    updateSignatureFollowupPanel();
+    const statusEl = document.getElementById("signature-followup-status");
+    if (statusEl) {
+      statusEl.textContent = "Registro selecionado. Clique em Enviar WhatsApp.";
+    }
+  });
   document.getElementById("send-whatsapp-sign-btn")?.addEventListener("click", () => {
     const phoneInput = document.getElementById("guardian-whatsapp");
     const statusEl = document.getElementById("signature-followup-status");
-    const latestParq = state.parq[0];
-    if (!phoneInput || !statusEl || !latestParq) return;
+    const targetParq = state.parq.find((p) => p.id === state.followupParqId) || state.parq[0];
+    if (!phoneInput || !statusEl || !targetParq) return;
 
-    const signInfo = getSignatureInfoForParq(latestParq);
+    const signInfo = getSignatureInfoForParq(targetParq);
     if (signInfo.isSigned) {
       statusEl.textContent = "Este contrato ja consta como assinado.";
       return;
@@ -522,7 +553,7 @@ function bindActions() {
     const text = encodeURIComponent(buildSignatureWhatsappMessage());
     const waUrl = `https://wa.me/${phone}?text=${text}`;
     window.open(waUrl, "_blank", "noopener,noreferrer");
-    statusEl.textContent = "WhatsApp aberto com mensagem de validacao para assinatura.";
+    statusEl.textContent = "WhatsApp aberto com o link de assinatura.";
   });
   document.getElementById("logout-btn")?.addEventListener("click", async () => {
     await state.client.auth.signOut();

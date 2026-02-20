@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Assinatura de Contrato | Academia 63</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="assets/images/logo/logo-63.svg" type="image/svg+xml" />
+</head>
+<body class="bg-gray-50 font-sans-clean text-gray-900">
+  <header class="bg-white border-b border-gray-200">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="inline-flex items-center gap-3">
+        <img src="assets/images/logo/logo-63.svg" alt="Academia 63" class="w-10 h-10" />
+        <span class="font-serif-jp text-lg">Academia 63</span>
+      </div>
+      <span class="text-sm text-gray-500">Assinatura por validacao de CPF</span>
+    </div>
+  </header>
+
+  <main class="max-w-3xl mx-auto px-6 py-8">
+    <section class="bg-white border border-gray-200 rounded-sm p-6">
+      <h1 class="font-serif-jp text-3xl mb-2">Assinatura de Contrato</h1>
+      <p class="text-sm text-gray-600 mb-4">
+        Para acessar e assinar, informe os 6 primeiros digitos do CPF do responsavel/assinante.
+      </p>
+
+      <div class="grid md:grid-cols-3 gap-3">
+        <input id="cpf-prefix-input" maxlength="6" placeholder="6 primeiros digitos do CPF" class="border border-gray-300 px-3 py-2 md:col-span-2" />
+        <button id="validate-access-btn" class="btn-primary text-white px-3 py-2">Validar acesso</button>
+      </div>
+      <p id="signature-access-status" class="text-sm text-gray-600 mt-3"></p>
+    </section>
+
+    <section id="contract-access-area" class="hidden mt-6 bg-white border border-gray-200 rounded-sm p-6">
+      <h2 class="font-serif-jp text-2xl mb-2">Contrato</h2>
+      <p id="contract-access-meta" class="text-sm text-gray-700 mb-4"></p>
+      <div class="flex flex-wrap gap-2">
+        <button id="open-contract-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Ler contrato</button>
+        <button id="print-contract-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Imprimir contrato</button>
+        <button id="download-contract-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Baixar PDF</button>
+        <button id="confirm-sign-btn" class="btn-primary text-white px-3 py-2 text-sm">Assinar contrato</button>
+      </div>
+      <p id="contract-sign-status" class="text-sm text-gray-700 mt-3"></p>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="js/config.js?v=20260220"></script>
+  <script src="js/supabase-client.js?v=20260220"></script>
+  <script src="js/pdf.js?v=20260220"></script>
+  <script src="js/signature-access.js?v=20260220"></script>
+</body>
+</html>
