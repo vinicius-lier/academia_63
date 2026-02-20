@@ -13,6 +13,7 @@ Execute no SQL Editor do Supabase nesta ordem:
 9. `009_contract_click_signatures.sql`
 10. `010_signature_link_flow.sql`
 11. `011_parq_signed_status.sql`
+12. `012_replace_unsigned_pdf_on_sign.sql`
 
 ## Observacoes
 

@@ -163,30 +163,19 @@ function bindContractActions() {
     setStatus("Registrando assinatura por clique...", "info");
 
     try {
-      const signedAt = new Date().toISOString();
-      const signaturePayload = {
-        id: createUuid(),
-        student_id: contractState.studentId,
-        parq_response_id: contractState.parqResponseId,
-        signer_name: contractState.signerName,
-        signer_cpf: contractState.signerCpf,
-        signature_method: "click_button",
-        signed_at: signedAt,
-      };
+      const signerCpfDigits = String(contractState.signerCpf || "").replace(/\D/g, "");
+      const cpfPrefix = signerCpfDigits.slice(0, 6);
+      if (cpfPrefix.length !== 6) {
+        throw new Error("CPF do assinante invalido para validacao (6 primeiros digitos).");
+      }
 
-      const { error: signError } = await contractState.client.from("contract_click_signatures").insert(signaturePayload);
+      const { data, error: signError } = await contractState.client.rpc("sign_contract_by_prefix", {
+        p_student_id: contractState.studentId,
+        p_parq_response_id: contractState.parqResponseId,
+        p_cpf_prefix: cpfPrefix,
+      });
       if (signError) throw signError;
-
-      const { error: updateParqSignError } = await contractState.client
-        .from("parq_responses")
-        .update({
-          contract_signed_at: signedAt,
-          contract_signer_name: contractState.signerName,
-          contract_signer_cpf: contractState.signerCpf,
-          contract_signature_method: "click_button",
-        })
-        .eq("id", contractState.parqResponseId);
-      if (updateParqSignError) throw updateParqSignError;
+      const signedAt = data?.signed_at || new Date().toISOString();
 
       contractState.signedAt = signedAt;
       const signedPayload = {
@@ -199,6 +188,14 @@ function bindContractActions() {
         },
       };
       const { fileName, blob } = await window.pdfContract.generateContractPdf(signedPayload);
+      await replaceParqPdfWithSigned({
+        client: contractState.client,
+        studentId: contractState.studentId,
+        parqResponseId: contractState.parqResponseId,
+        cpfPrefix,
+        fileName,
+        pdfBlob: blob,
+      });
       if (contractState.objectUrl) URL.revokeObjectURL(contractState.objectUrl);
       contractState.objectUrl = URL.createObjectURL(blob);
       contractState.fileName = fileName;
@@ -228,6 +225,24 @@ async function uploadContractPdf({ client, studentId, fullName, pdfBlob }) {
 
   const pdfUrlValue = `parq-pdfs/${filePath}`;
   return { filePath, pdfUrlValue };
+}
+
+async function replaceParqPdfWithSigned({ client, studentId, parqResponseId, cpfPrefix, fileName, pdfBlob }) {
+  const filePath = `contracts/${studentId}/SIGNED-${Date.now()}-${fileName}`;
+  const { error: uploadError } = await client.storage.from("parq-pdfs").upload(filePath, pdfBlob, {
+    contentType: "application/pdf",
+    upsert: false,
+  });
+  if (uploadError) throw uploadError;
+
+  const pdfUrlValue = `parq-pdfs/${filePath}`;
+  const { error: replaceError } = await client.rpc("set_signed_contract_pdf_by_prefix", {
+    p_student_id: studentId,
+    p_parq_response_id: parqResponseId,
+    p_cpf_prefix: cpfPrefix,
+    p_pdf_url: pdfUrlValue,
+  });
+  if (replaceError) throw replaceError;
 }
 
 async function insertStudentWithFallback(client, studentPayload) {

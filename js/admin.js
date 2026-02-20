@@ -8,6 +8,7 @@ const state = {
   documents: [],
   signatures: [],
   followupParqId: null,
+  signedByStudent: {},
 };
 
 function getSignatureInfoForParq(row) {
@@ -159,9 +160,16 @@ function renderStudentsList() {
     .map((student) => {
       const selected = state.selectedStudent?.id === student.id;
       const rowClass = selected ? "bg-red-50" : "";
+      const studentSigned = !!state.signedByStudent[student.id];
+      const statusBadge = studentSigned
+        ? '<span class="text-[10px] px-2 py-0.5 rounded bg-green-100 text-green-800 border border-green-200">Assinado</span>'
+        : '<span class="text-[10px] px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-200">Nao assinado</span>';
       return `
         <button data-student-id="${student.id}" class="w-full text-left p-3 hover:bg-gray-50 ${rowClass}">
-          <div class="font-medium">${escapeHtml(student.full_name)}</div>
+          <div class="flex items-center justify-between gap-2">
+            <div class="font-medium">${escapeHtml(student.full_name)}</div>
+            ${statusBadge}
+          </div>
           <div class="text-xs text-gray-500">Cadastro: ${formatDate(student.created_at)}</div>
         </button>
       `;
@@ -207,6 +215,7 @@ function renderStudentDetails() {
       <div><strong>Contrato ate fim do ano:</strong> ${student.contract_until_year_end_accepted ? "Sim" : "Nao"}</div>
       <div><strong>Elegivel a desconto:</strong> ${student.discount_eligible ? "Sim" : "Nao"}</div>
       <div><strong>Menor de idade:</strong> ${student.is_minor ? "Sim" : "Nao"}</div>
+      <div><strong>Status geral contrato:</strong> ${state.signedByStudent[student.id] ? "Assinado" : "Nao assinado"}</div>
       <div class="md:col-span-2"><strong>Endereco:</strong> ${escapeHtml(student.address || "-")}</div>
     </div>
     ${
@@ -274,6 +283,20 @@ function parseStoredPdfPath(pdfUrl) {
   return { bucket, path };
 }
 
+function getPreferredContractPath() {
+  const signedDoc = state.documents
+    .filter((d) => d.doc_type === "signed_pdf")
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+
+  if (signedDoc?.file_path) {
+    return { bucket: "student-documents", path: signedDoc.file_path };
+  }
+
+  const latestParq = state.parq[0];
+  if (!latestParq?.pdf_url) return null;
+  return parseStoredPdfPath(latestParq.pdf_url);
+}
+
 function buildFallbackPayload() {
   const student = state.selectedStudent;
   const latestParq = state.parq[0];
@@ -311,7 +334,7 @@ async function viewOrPrintContract(printMode) {
     return;
   }
 
-  const parsed = parseStoredPdfPath(latestParq.pdf_url);
+  const parsed = getPreferredContractPath();
   if (!parsed) {
     setAdminStatus("Aluno sem pdf_url. Use o PDF fallback.", "error");
     return;
@@ -411,6 +434,42 @@ async function searchStudents() {
   }
 
   state.students = data || [];
+  const studentIds = state.students.map((s) => s.id);
+  state.signedByStudent = {};
+
+  if (studentIds.length) {
+    const [parqSignedRes, clickSignedRes, signedDocsRes] = await Promise.all([
+      state.client
+        .from("parq_responses")
+        .select("student_id, contract_signed_at")
+        .in("student_id", studentIds),
+      state.client
+        .from("contract_click_signatures")
+        .select("student_id"),
+      state.client
+        .from("student_documents")
+        .select("student_id, doc_type")
+        .eq("doc_type", "signed_pdf")
+        .in("student_id", studentIds),
+    ]);
+
+    if (!parqSignedRes.error && parqSignedRes.data) {
+      parqSignedRes.data.forEach((row) => {
+        if (row.contract_signed_at) state.signedByStudent[row.student_id] = true;
+      });
+    }
+    if (!clickSignedRes.error && clickSignedRes.data) {
+      clickSignedRes.data.forEach((row) => {
+        state.signedByStudent[row.student_id] = true;
+      });
+    }
+    if (!signedDocsRes.error && signedDocsRes.data) {
+      signedDocsRes.data.forEach((row) => {
+        state.signedByStudent[row.student_id] = true;
+      });
+    }
+  }
+
   if (state.selectedStudent) {
     const refreshedSelected = state.students.find((s) => s.id === state.selectedStudent.id);
     state.selectedStudent = refreshedSelected || null;

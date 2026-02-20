@@ -78,6 +78,30 @@ async function regenerateContractBlob() {
   accessState.fileName = fileName;
 }
 
+async function uploadSignedPdfAndReplace() {
+  if (!accessState.objectUrl || !accessState.fileName || !accessState.context) return;
+  const response = await fetch(accessState.objectUrl);
+  const blob = await response.blob();
+  const filePath = `contracts/${accessState.studentId}/SIGNED-${Date.now()}-${accessState.fileName}`;
+
+  const { error: uploadError } = await accessState.client.storage
+    .from("parq-pdfs")
+    .upload(filePath, blob, {
+      contentType: "application/pdf",
+      upsert: false,
+    });
+  if (uploadError) throw uploadError;
+
+  const pdfUrl = `parq-pdfs/${filePath}`;
+  const { error: replaceError } = await accessState.client.rpc("set_signed_contract_pdf_by_prefix", {
+    p_student_id: accessState.studentId,
+    p_parq_response_id: accessState.parqId,
+    p_cpf_prefix: accessState.cpfPrefix,
+    p_pdf_url: pdfUrl,
+  });
+  if (replaceError) throw replaceError;
+}
+
 function bindContractActions() {
   document.getElementById("open-contract-btn")?.addEventListener("click", () => {
     if (!accessState.objectUrl) return;
@@ -122,8 +146,9 @@ function bindContractActions() {
         signer_cpf: data.signer_cpf,
       };
       await regenerateContractBlob();
+      await uploadSignedPdfAndReplace();
 
-      setStatus("contract-sign-status", "Contrato assinado com sucesso. Baixe o PDF assinado.", "success");
+      setStatus("contract-sign-status", "Contrato assinado e substituido no gerenciamento com sucesso.", "success");
       btn.textContent = "Contrato assinado";
       btn.disabled = true;
     } catch (err) {
