@@ -23,7 +23,7 @@ Execute no SQL Editor:
 2. PDF baixa no navegador e sobe para bucket `parq-pdfs`.
 3. `parq_responses.pdf_url` fica preenchido.
 4. Sem aceite de contrato, inscricao salva sem geracao de contrato e sem elegibilidade de desconto.
-5. Com aceite de contrato, gera PDF para leitura/impressao e opcao de assinatura via GovBR.
+5. Com aceite de contrato, gera PDF para leitura/impressao e opcao de assinatura por clique no proprio site.
 6. Login admin em `login.html` funciona para usuario presente em `admin_users`.
 7. Dashboard busca alunos, edita observacoes, abre/imprime contrato e sobe documentos.
 8. Upload/listagem em `student_documents` e bucket `student-documents` funcionando.

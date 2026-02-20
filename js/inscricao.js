@@ -1,10 +1,16 @@
 const BASE_MONTHLY_FEE = 120;
 const DISCOUNT_MONTHLY_FEE = 100;
-const GOVBR_SIGN_URL = "https://www.gov.br/governodigital/pt-br/assinatura-eletronica";
 
 const contractState = {
   objectUrl: null,
   fileName: null,
+  payload: null,
+  client: null,
+  studentId: null,
+  parqResponseId: null,
+  signerName: null,
+  signerCpf: null,
+  signedAt: null,
 };
 
 let publicClient = null;
@@ -57,9 +63,16 @@ function toggleGuardianSection(isMinor) {
 function clearContractObjectUrl() {
   if (contractState.objectUrl) {
     URL.revokeObjectURL(contractState.objectUrl);
-    contractState.objectUrl = null;
-    contractState.fileName = null;
   }
+  contractState.objectUrl = null;
+  contractState.fileName = null;
+  contractState.payload = null;
+  contractState.client = null;
+  contractState.studentId = null;
+  contractState.parqResponseId = null;
+  contractState.signerName = null;
+  contractState.signerCpf = null;
+  contractState.signedAt = null;
 }
 
 function getPublicClient() {
@@ -86,15 +99,18 @@ function showContractActions(show) {
   panel.classList.toggle("hidden", !show);
 }
 
+function resetSignButton() {
+  const signBtn = document.getElementById("sign-contract-btn");
+  if (!signBtn) return;
+  signBtn.disabled = false;
+  signBtn.textContent = "Assinar contrato";
+}
+
 function bindContractActions() {
   const readBtn = document.getElementById("read-contract-btn");
   const printBtn = document.getElementById("print-contract-btn");
   const downloadBtn = document.getElementById("download-contract-btn");
-  const govLink = document.getElementById("govbr-sign-link");
-
-  if (govLink) {
-    govLink.href = GOVBR_SIGN_URL;
-  }
+  const signBtn = document.getElementById("sign-contract-btn");
 
   readBtn?.addEventListener("click", () => {
     if (!contractState.objectUrl) return;
@@ -117,6 +133,56 @@ function bindContractActions() {
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
+  });
+
+  signBtn?.addEventListener("click", async () => {
+    if (!contractState.client || !contractState.payload || !contractState.studentId || !contractState.parqResponseId) {
+      setStatus("Nenhum contrato disponivel para assinatura.", "error");
+      return;
+    }
+
+    signBtn.disabled = true;
+    signBtn.textContent = "Assinando...";
+    setStatus("Registrando assinatura por clique...", "info");
+
+    try {
+      const signedAt = new Date().toISOString();
+      const signaturePayload = {
+        id: createUuid(),
+        student_id: contractState.studentId,
+        parq_response_id: contractState.parqResponseId,
+        signer_name: contractState.signerName,
+        signer_cpf: contractState.signerCpf,
+        signature_method: "click_button",
+        signed_at: signedAt,
+      };
+
+      const { error: signError } = await contractState.client.from("contract_click_signatures").insert(signaturePayload);
+      if (signError) throw signError;
+
+      contractState.signedAt = signedAt;
+      const signedPayload = {
+        ...contractState.payload,
+        signature: {
+          method: "click_button",
+          signed_at: signedAt,
+          signer_name: contractState.signerName,
+          signer_cpf: contractState.signerCpf,
+        },
+      };
+      const { fileName, blob } = await window.pdfContract.generateContractPdf(signedPayload);
+      if (contractState.objectUrl) URL.revokeObjectURL(contractState.objectUrl);
+      contractState.objectUrl = URL.createObjectURL(blob);
+      contractState.fileName = fileName;
+      contractState.payload = signedPayload;
+
+      setStatus("Contrato assinado por clique com sucesso. PDF atualizado.", "success");
+      signBtn.textContent = "Contrato assinado";
+    } catch (error) {
+      setStatus(`Falha ao assinar contrato: ${error.message}`, "error");
+      signBtn.textContent = "Assinar contrato";
+      signBtn.disabled = false;
+    }
   });
 }
 
@@ -195,6 +261,7 @@ async function handleSubmit(event) {
   setStatus("Salvando inscricao...", "info");
   showContractActions(false);
   clearContractObjectUrl();
+  resetSignButton();
 
   try {
     const currentYear = new Date().getFullYear();
@@ -271,13 +338,18 @@ async function handleSubmit(event) {
         parq: {
           answers: answersArray,
           has_positive_answer: answersArray.some(Boolean),
-          govbr_signature_requested: form.govbr_signature_requested.checked,
+          govbr_signature_requested: false,
         },
       };
 
       const { fileName, blob } = await window.pdfContract.generateContractPdf(contractPayload);
       contractState.objectUrl = URL.createObjectURL(blob);
       contractState.fileName = fileName;
+      contractState.payload = contractPayload;
+      contractState.client = client;
+      contractState.studentId = studentId;
+      contractState.signerName = studentPayload.full_name;
+      contractState.signerCpf = studentPayload.cpf;
 
       const uploadResult = await uploadContractPdf({
         client,
@@ -288,6 +360,7 @@ async function handleSubmit(event) {
       uploadedPdfPath = uploadResult.filePath;
       pdfUrlValue = uploadResult.pdfUrlValue;
       showContractActions(true);
+      resetSignButton();
     }
 
     const parqPayload = {
@@ -295,11 +368,12 @@ async function handleSubmit(event) {
       student_id: studentId,
       ...answers,
       responsibility_term_accepted: form.responsibility_term_accepted.checked,
-      govbr_signature_requested: form.govbr_signature_requested.checked,
+      govbr_signature_requested: false,
       pdf_url: pdfUrlValue,
     };
     const { error: parqError } = await client.from("parq_responses").insert(parqPayload);
     if (parqError) throw parqError;
+    contractState.parqResponseId = parqPayload.id;
 
     form.reset();
     toggleGuardianSection(false);
@@ -307,7 +381,7 @@ async function handleSubmit(event) {
     form.monthly_fee.value = BASE_MONTHLY_FEE;
 
     if (contractAccepted) {
-      let msg = "Inscricao enviada. Contrato gerado para leitura, assinatura digital (GovBR) ou impressao.";
+      let msg = "Inscricao enviada. Contrato gerado para leitura, assinatura por clique ou impressao.";
       if (uploadedPdfPath) msg += ` Arquivo salvo em: ${uploadedPdfPath}`;
       setStatus(msg, "success");
     } else {

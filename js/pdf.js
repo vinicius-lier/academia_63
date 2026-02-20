@@ -158,6 +158,15 @@ function drawFooter(doc) {
   doc.text("Academia 63 - Documento gerado digitalmente", 14, 289.2);
 }
 
+function formatSignedAt(value) {
+  if (!value) return "-";
+  try {
+    return new Date(value).toLocaleString("pt-BR");
+  } catch {
+    return value;
+  }
+}
+
 async function generateContractPdf(payload) {
   if (!window.jspdf || !window.jspdf.jsPDF) {
     throw new Error("jsPDF nao foi carregado.");
@@ -289,8 +298,7 @@ async function generateContractPdf(payload) {
     14,
     y
   );
-  doc.text(`Assinatura via GovBR solicitada: ${payload.parq.govbr_signature_requested ? "SIM" : "NAO"}`, 14, y);
-  y += 12;
+  y += 8;
 
   doc.setDrawColor(30, 30, 30);
   doc.line(14, y, 94, y);
@@ -298,6 +306,26 @@ async function generateContractPdf(payload) {
   doc.setFontSize(9);
   doc.text("Assinatura do Aluno/Responsavel", 14, y + 5);
   doc.text("Data", 114, y + 5);
+
+  if (payload.signature?.method === "click_button") {
+    y += 13;
+    doc.setFillColor(232, 252, 241);
+    doc.roundedRect(12, y - 4, 186, 13, 1.5, 1.5, "F");
+    doc.setDrawColor(42, 122, 85);
+    doc.roundedRect(12, y - 4, 186, 13, 1.5, 1.5, "S");
+    doc.setTextColor(24, 92, 62);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("ASSINADO ELETRONICAMENTE POR CLIQUE", 14, y + 1);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(
+      `Assinante: ${payload.signature.signer_name || "-"} | CPF: ${payload.signature.signer_cpf || "-"} | Data: ${formatSignedAt(payload.signature.signed_at)}`,
+      14,
+      y + 6
+    );
+    doc.setTextColor(...THEME.text);
+  }
 
   drawFooter(doc);
 

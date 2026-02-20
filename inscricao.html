@@ -217,11 +217,6 @@
               <input type="checkbox" id="responsibility_term_accepted" name="responsibility_term_accepted" required class="mt-1" />
               <span>Declaro que as informacoes acima sao verdadeiras e assumo responsabilidade pelos dados fornecidos.</span>
             </label>
-
-            <label class="flex gap-2 items-start">
-              <input type="checkbox" id="govbr_signature_requested" name="govbr_signature_requested" class="mt-1" />
-              <span>Quero assinar digitalmente via GovBR.</span>
-            </label>
           </div>
         </div>
 
@@ -232,12 +227,11 @@
             Assumo plena responsabilidade por qualquer atividade fisica praticada sem o atendimento a essa recomendacao.
           </p>
 
-          <h3 class="font-serif-jp text-xl mb-3">Assinatura GovBR (opcional)</h3>
+          <h3 class="font-serif-jp text-xl mb-3">Assinatura Eletronica por Clique</h3>
           <ol class="list-decimal list-inside text-gray-700 space-y-1">
-            <li>Baixe o contrato PDF apos a confirmacao da inscricao.</li>
-            <li>Acesse o portal de assinatura digital do GovBR.</li>
-            <li>Envie o PDF e assine com sua conta GovBR.</li>
-            <li>Envie o arquivo assinado para a equipe administrativa.</li>
+            <li>Envie a inscricao para gerar o contrato.</li>
+            <li>Clique em "Assinar contrato" no bloco de acoes.</li>
+            <li>Baixe ou imprima o PDF atualizado com o registro de assinatura por clique.</li>
           </ol>
         </div>
 
@@ -256,15 +250,7 @@
               <button type="button" id="read-contract-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Ler contrato</button>
               <button type="button" id="print-contract-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Imprimir contrato</button>
               <button type="button" id="download-contract-btn" class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100">Baixar PDF</button>
-              <a
-                id="govbr-sign-link"
-                href="https://www.gov.br/governodigital/pt-br/assinatura-eletronica"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="border border-gray-300 px-3 py-2 text-sm hover:bg-gray-100"
-              >
-                Assinar no GovBR
-              </a>
+              <button type="button" id="sign-contract-btn" class="btn-primary text-white px-3 py-2 text-sm">Assinar contrato</button>
             </div>
           </div>
         </div>
